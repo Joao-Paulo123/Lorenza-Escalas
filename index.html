@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lorenza Gelateria — Escalas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===== TELA DE LOGIN ===== -->
+<div id="login-screen" class="login-container">
+  <div class="login-box card">
+    <div style="text-align: center; margin-bottom: 24px;">
+      <span style="font-size: 3.5rem;">🍨</span>
+      <h1 style="font-family: var(--font-display); color: var(--brand-700); font-size: 2.2rem; margin: 0;">Lorenza</h1>
+      <p style="color: var(--neutral-500); font-size: 0.9rem;">Sistema de Escalas v4.0</p>
+    </div>
+    <div class="form-grid">
+      <label class="form-label" style="text-align:left;">Acessar como:</label>
+      <select id="login-select" class="input">
+        <option value="admin">Administrador Geral</option>
+        <optgroup id="login-funcionarios" label="Equipe (Visualização e Pedidos)"></optgroup>
+      </select>
+      <button id="btn-login" class="btn btn--primary" style="width: 100%; justify-content: center; margin-top: 12px; padding: 12px;">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LAYOUT PRINCIPAL ===== -->
+<div id="app-layout" class="layout" style="display:none;">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">🍨</span>
+      <span class="sidebar__name">Lorenza</span>
+    </div>
+    
+    <div class="sidebar__user">
+      <div id="user-avatar" class="user-avatar">A</div>
+      <div class="user-info">
+        <div id="user-name" class="user-name">Admin</div>
+        <div id="user-role" class="user-role">Administrador</div>
+      </div>
+    </div>
+
+    <nav class="sidebar__nav">
+      <button class="nav-btn" data-section="dashboard" data-roles="admin"><span class="nav-icon">📊</span> Dashboard</button>
+      <button class="nav-btn" data-section="calendario" data-roles="admin,funcionario"><span class="nav-icon">📅</span> Calendário</button>
+      <button class="nav-btn" data-section="minhas-solicitacoes" data-roles="funcionario"><span class="nav-icon">📝</span> Minhas Solicitações</button>
+      <button class="nav-btn" data-section="central-aprovacoes" data-roles="admin"><span class="nav-icon">✅</span> Aprovações <span id="badge-aprovacoes-nav" class="badge badge--warning" style="margin-left:auto">0</span></button>
+      <button class="nav-btn" data-section="escala-mensal" data-roles="admin"><span class="nav-icon">📆</span> Escala Mensal</button>
+      <button class="nav-btn" data-section="funcionarios" data-roles="admin"><span class="nav-icon">👥</span> Funcionários</button>
+      <button class="nav-btn" data-section="feriados" data-roles="admin"><span class="nav-icon">🎉</span> Feriados & Exceções</button>
+      <button class="nav-btn" data-section="relatorios" data-roles="admin"><span class="nav-icon">📈</span> Relatórios</button>
+      <button class="nav-btn" data-section="configuracoes" data-roles="admin"><span class="nav-icon">⚙️</span> Configurações</button>
+      <button class="nav-btn" data-section="auditoria" data-roles="admin"><span class="nav-icon">📜</span> Auditoria</button>
+    </nav>
+    <div class="sidebar__footer">
+      <button class="btn-backup" id="btn-logout">🚪 Sair</button>
+    </div>
+  </aside>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main-content">
+
+    <!-- ===== SEÇÃO: DASHBOARD ===== -->
+    <section id="dashboard" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Dashboard</h1>
+        <p class="section-subtitle">Visão geral · <span id="data-hoje"></span></p>
+      </header>
+
+      <div class="cards-info">
+        <div class="info-card">
+          <span class="info-card__label">Equipe Ativa</span>
+          <span class="info-card__value" id="dashTotalFuncionarios">0</span>
+        </div>
+        <div class="info-card info-card--destaque">
+          <span class="info-card__label">Folgas hoje</span>
+          <span class="info-card__value" id="dashFolgasHoje">0</span>
+        </div>
+        <div class="info-card">
+          <span class="info-card__label">Trabalhando hoje</span>
+          <span class="info-card__value" id="dashTrabalhandoHoje">0</span>
+        </div>
+      </div>
+
+      <div class="solicitacoes-colunas">
+        <div class="card">
+          <h2 class="card-title">⚠️ Alertas de Cobertura (Próximos 7 dias)</h2>
+          <div id="lista-alertas-cobertura"></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">📜 Últimas Atividades</h2>
+          <div id="lista-ultimas-atividades"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: CALENDÁRIO ===== -->
+    <section id="calendario" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Calendário</h1>
+        <p class="section-subtitle">Escala consolidada da equipe</p>
+      </header>
+
+      <div class="card">
+        <h2 class="card-title">Resumo da semana</h2>
+        <p class="card-desc" id="resumo-mes-label"></p>
+        <div id="resumo-semanal" class="resumo-grid"></div>
+      </div>
+
+      <div class="card">
+        <div class="calendario-nav">
+          <button id="mes-anterior" class="btn-nav">◀</button>
+          <h2 id="titulo-calendario" class="card-title">📅</h2>
+          <button id="mes-proximo" class="btn-nav">▶</button>
+        </div>
+        <div id="calendario-mensal"></div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: MINHAS SOLICITAÇÕES (FUNCIONÁRIO) ===== -->
+    <section id="minhas-solicitacoes" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Minhas Solicitações</h1>
+        <p class="section-subtitle">Pedidos de ausência, troca de folga ou definição de folga mensal</p>
+      </header>
+
+      <div class="form-grid form-grid--2">
+        <div class="card form-card">
+          <h2 class="card-title">Nova Solicitação (Exceção/Troca)</h2>
+          <div class="form-grid">
+            <select id="funcTipoSol" class="input">
+              <option value="ausencia">Ausência (Atestado/Consulta/Emergência)</option>
+              <option value="troca">Troca de Folga</option>
+              <option value="ferias">Férias</option>
+            </select>
+            
+            <div id="funcGroupAusencia" class="form-grid">
+              <label class="form-label">Data da Ausência</label>
+              <input type="date" id="funcDataAusencia" class="input" />
+            </div>
+
+            <div id="funcGroupTroca" class="form-grid" style="display:none;">
+              <label class="form-label">Data Original (que seria sua folga)</label>
+              <input type="date" id="funcDataOriginal" class="input" />
+              <label class="form-label">Nova Data (dia desejado para folgar)</label>
+              <input type="date" id="funcNovaData" class="input" />
+              <p class="card-desc" style="font-size:0.75rem; margin-top:2px; margin-bottom:0;">A troca deve ocorrer dentro da mesma semana (Seg-Dom).</p>
+            </div>
+
+            <div id="funcGroupFerias" class="form-grid" style="display:none;">
+              <label class="form-label">Data de Início das Férias</label>
+              <input type="date" id="funcDataInicioFerias" class="input" />
+              <label class="form-label">Data de Fim (Retorno)</label>
+              <input type="date" id="funcDataFimFerias" class="input" />
+            </div>
+
+            <label class="form-label">Motivo</label>
+            <input type="text" id="funcMotivo" class="input" placeholder="Obrigatório para ausências" />
+            
+            <button id="btnEnviarSol" class="btn btn--primary" style="margin-top:8px;">Enviar Pedido</button>
+          </div>
+        </div>
+
+        <div class="card form-card" id="cardFolgaMensal" style="display:none;">
+          <h2 class="card-title">Solicitar 2ª Folga Mensal</h2>
+          <p class="card-desc" id="descFolgaMensal"></p>
+          <div class="form-grid">
+            <select id="funcMesFolga" class="input" disabled></select>
+            
+            <div id="funcGrupoDatasFolga" style="background:var(--brand-50); padding:10px; border-radius:var(--radius-sm); border:1px solid var(--brand-100);">
+              <label class="form-label">Adicionar Data (Máx. 5, Obrigatório 1 Domingo)</label>
+              <div style="display:flex; gap:6px; margin-bottom:10px;">
+                <input type="date" id="funcInputDataUnica" class="input" />
+                <button id="btnAddDataFolga" class="btn btn--ghost" style="white-space:nowrap;">+ Adicionar</button>
+              </div>
+              <div id="lista-datas-selecionadas" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+            </div>
+
+            <button id="btnEnviarFolgaMensal" class="btn btn--primary" style="margin-top:8px;">Enviar Solicitação</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Meu Histórico de Solicitações</h2>
+        <div id="lista-minhas-solicitacoes"></div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: CENTRAL DE APROVAÇÕES (ADMIN/SUP) ===== -->
+    <section id="central-aprovacoes" class="section" style="display:none;">
+      <header class="section-header">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h1>Central de Aprovações</h1>
+            <p class="section-subtitle">Gerencie os pedidos enviados pela equipe</p>
+          </div>
+          <div>
+             <select id="filtroMesAprovacoes" class="input" style="min-width:180px;">
+               <option value="todos">Todos os Meses</option>
+             </select>
+          </div>
+        </div>
+      </header>
+
+      <div class="solicitacoes-colunas">
+        <div class="card">
+          <h2 class="card-title">Pendentes <span id="badge-ativas" class="badge badge--warning">0</span></h2>
+          <div id="lista-solicitacoes-ativas"></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">
+            Histórico <span id="badge-historico" class="badge">0</span>
+            <button id="btnLimparHistorico" class="btn btn--ghost btn--sm">🗑 Limpar Histórico do Filtro</button>
+          </h2>
+          <div id="lista-solicitacoes-historico"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: ESCALA MENSAL (ADMIN/SUP) ===== -->
+    <section id="escala-mensal" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Escala Mensal</h1>
+        <p class="section-subtitle">Defina e congele as datas de 2ª folga de cada funcionário por mês</p>
+      </header>
+
+      <div class="card">
+        <div class="form-grid form-grid--3" style="align-items: end;">
+          <div>
+            <label class="form-label">Selecione o Mês</label>
+            <select id="escalaMesSelect" class="input"></select>
+          </div>
+          <div>
+            <div id="escalaStatusBadge" class="badge" style="display:inline-block; font-size:0.9rem; padding:6px 12px;"></div>
+          </div>
+          <div style="text-align:right;">
+            <button id="btnCongelarMes" class="btn btn--warning">❄️ Congelar Mês</button>
+            <button id="btnDescongelarMes" class="btn btn--ghost" style="display:none;">🔓 Descongelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table style="width:100%; text-align:left; border-collapse:collapse; min-width:600px;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--neutral-100);">
+                <th style="padding:10px; width:20%;">Funcionário</th>
+                <th style="padding:10px; width:20%;">Turno/Local</th>
+                <th style="padding:10px; width:30%;" id="col-pedido-modo2">Pedido (Modo 2)</th>
+                <th style="padding:10px; width:30%;">Datas de 2ª Folga Definidas</th>
+              </tr>
+            </thead>
+            <tbody id="lista-escala-admin"></tbody>
+          </table>
+        </div>
+        <button id="btnSalvarEscalaAdmin" class="btn btn--primary" style="margin-top:16px;">💾 Salvar Alterações</button>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: FUNCIONÁRIOS ===== -->
+    <section id="funcionarios" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Funcionários</h1>
+        <p class="section-subtitle">Gerencie a equipe e folgas padrão</p>
+      </header>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="ativos">Ativos <span id="badge-ativos" class="badge">0</span></button>
+        <button class="tab-btn" data-tab="inativos">Inativos <span id="badge-inativos" class="badge">0</span></button>
+        <button class="tab-btn" data-tab="arquivados">Arquivados <span id="badge-arquivados" class="badge">0</span></button>
+      </div>
+
+      <div id="tab-ativos" class="tab-content">
+        <div class="card form-card">
+          <h2 class="card-title">Adicionar funcionário</h2>
+          <div class="form-grid form-grid--3">
+            <input type="text" id="idPontoFuncionario" placeholder="ID Ponto (Ex: 101)" class="input" />
+            <input type="text" id="nomeFuncionario" placeholder="Nome completo" class="input" />
+            <select id="localFuncionario" class="input">
+              <option value="">Local de trabalho</option>
+              <option value="Campo Duna">Campo Duna</option>
+              <option value="Casa Kimo">Casa Kimo</option>
+              <option value="Ambos">Ambos</option>
+            </select>
+            <select id="turnoFuncionario" class="input">
+              <option value="">Turno</option>
+              <option value="Único">Único</option>
+              <option value="Manhã">Manhã</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noite">Noite</option>
+            </select>
+            <select id="folga1Funcionario" class="input">
+              <option value="Segunda">Folga fixa: Segunda</option>
+            </select>
+            <select id="folga2Funcionario" class="input">
+              <option value="">2ª Folga (padrão base)</option>
+              <option>Terça</option><option>Quarta</option>
+              <option>Quinta</option><option>Sexta</option><option>Sábado</option><option>Domingo</option>
+            </select>
+            <input type="text" id="obsFuncionario" placeholder="Observações (opcional)" class="input" />
+          </div>
+          <button id="btnAdicionar" class="btn btn--primary" style="margin-top:12px;">+ Adicionar funcionário</button>
+        </div>
+        <div class="card">
+          <div id="lista-funcionarios"></div>
+        </div>
+      </div>
+
+      <div id="tab-inativos" class="tab-content" style="display:none;">
+        <div class="card">
+          <p class="card-desc">Funcionários inativos não aparecem em novas escalas.</p>
+          <div id="lista-inativos"></div>
+        </div>
+      </div>
+
+      <div id="tab-arquivados" class="tab-content" style="display:none;">
+        <div class="card">
+          <p class="card-desc">Funcionários arquivados são mantidos para fins históricos, mas não aparecem em operações atuais.</p>
+          <div id="lista-arquivados"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: FERIADOS E EXCEÇÕES ===== -->
+    <section id="feriados" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Feriados & Exceções</h1>
+        <p class="section-subtitle">Gestão manual de overrides de escala</p>
+      </header>
+
+      <div class="card form-card">
+        <h2 class="card-title">Cadastrar Feriado</h2>
+        <div class="form-grid form-grid--2">
+          <input type="date" id="dataFeriado" class="input" />
+          <input type="text" id="nomeFeriado" placeholder="Nome do feriado" class="input" />
+          <div class="radio-group" style="grid-column:1/-1;">
+            <label class="radio-label"><input type="radio" name="statusFeriado" value="fechado" checked /> Loja fechada</label>
+            <label class="radio-label"><input type="radio" name="statusFeriado" value="aberto" /> Loja aberta</label>
+          </div>
+          <button id="btnAdicionarFeriado" class="btn btn--primary" style="grid-column:1/-1;">+ Adicionar Feriado</button>
+        </div>
+      </div>
+
+      <div class="card form-card">
+        <h2 class="card-title">Adicionar Exceção Manual (Override)</h2>
+        <p class="card-desc">Força o status de um funcionário para um dia específico.</p>
+        <div class="form-grid form-grid--2">
+          <select id="funcionarioExcecao" class="input"></select>
+          <input type="date" id="dataExcecao" class="input" />
+          <select id="tipoExcecao" class="input" style="grid-column:1/-1;">
+            <option value="folga">Folga extra nesta data</option>
+            <option value="trabalha">Trabalha nesta data (cancela folga)</option>
+          </select>
+          <button id="btnAdicionarExcecao" class="btn btn--primary" style="grid-column:1/-1;">+ Adicionar Exceção</button>
+        </div>
+      </div>
+
+      <div class="feriados-colunas">
+        <div class="card">
+          <h2 class="card-title">Feriados</h2>
+          <div id="lista-feriados"></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Exceções Manuais</h2>
+          <div id="lista-excecoes"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: CONFIGURAÇÕES ===== -->
+    <section id="configuracoes" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Configurações</h1>
+        <p class="section-subtitle">Ajustes globais do sistema</p>
+      </header>
+
+      <div class="form-grid form-grid--2">
+        <div class="card form-card">
+          <h2 class="card-title">Modo de Escala Mensal</h2>
+          <select id="configModoEscala" class="input">
+            <option value="1">MODO 1: Administrativa (Gestor define diretamente)</option>
+            <option value="2">MODO 2: Por Solicitações (Equipe pede, gestor aprova)</option>
+          </select>
+          <p class="card-desc" style="margin-top:10px;">No Modo 2, a opção de pedir folga mensal é liberada aos funcionários na aba "Minhas Solicitações" nos últimos 3 dias do mês.</p>
+        </div>
+
+        <div class="card form-card">
+          <h2 class="card-title">Cobertura Mínima (Turno)</h2>
+          <div class="form-grid">
+            <label class="form-label">Campo Duna</label>
+            <input type="number" id="configMinCampo" class="input" min="1" max="10" />
+            <label class="form-label">Casa Kimo</label>
+            <input type="number" id="configMinKimo" class="input" min="1" max="10" />
+          </div>
+        </div>
+      </div>
+      <button id="btnSalvarConfig" class="btn btn--primary">Salvar Configurações</button>
+      
+      <div class="card form-card" style="margin-top:20px;">
+        <h2 class="card-title">Gerenciamento de Dados</h2>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn--ghost" onclick="exportarBackup()">⬇️ Exportar Backup JSON</button>
+          <label class="btn btn--ghost" style="cursor:pointer; margin:0;">
+            ⬆️ Importar Backup JSON
+            <input type="file" id="inputImportacao" accept=".json" style="display:none;" onchange="importarBackup(event)" />
+          </label>
+            <button class="btn btn--danger" onclick="limparTodasAsFolgas()">🗑️ Limpar Todas as Folgas</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: AUDITORIA ===== -->
+    <section id="auditoria" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Auditoria</h1>
+        <p class="section-subtitle">Histórico de ações no sistema</p>
+      </header>
+      <div class="card">
+        <div id="lista-auditoria" style="max-height: 600px; overflow-y:auto;"></div>
+      </div>
+    </section>
+
+    <!-- ===== SEÇÃO: RELATÓRIOS ===== -->
+    <section id="relatorios" class="section" style="display:none;">
+      <header class="section-header">
+        <h1>Relatórios e Análises</h1>
+        <p class="section-subtitle">Acompanhamento operacional, administrativo e histórico do sistema.</p>
+      </header>
+
+      <div class="tabs" id="relatorios-tabs-container">
+        <!-- JS will generate tabs here -->
+      </div>
+
+      <div id="relatorios-content-container" style="margin-top: 16px;">
+        <!-- JS will generate report content here -->
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal Edição Funcionário -->
+<div id="modal-edicao" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h2 class="modal-title">Editar funcionário</h2>
+    <input type="hidden" id="editIndex" />
+    <div class="form-grid form-grid--2">
+      <input type="text" id="editIdPonto" placeholder="ID Ponto" class="input" style="grid-column:1/-1;" />
+      <input type="text" id="editNome" placeholder="Nome" class="input" style="grid-column:1/-1;" />
+      <select id="editLocal" class="input">
+        <option value="">Local</option>
+        <option value="Campo Duna">Campo Duna</option>
+        <option value="Casa Kimo">Casa Kimo</option>
+        <option value="Ambos">Ambos</option>
+      </select>
+      <select id="editTurno" class="input">
+        <option value="">Turno</option>
+        <option value="Único">Único</option>
+        <option value="Manhã">Manhã</option>
+        <option value="Tarde">Tarde</option>
+        <option value="Noite">Noite</option>
+      </select>
+      <select id="editFolga1" class="input">
+        <option value="Segunda">Folga fixa: Segunda</option>
+      </select>
+      <select id="editFolga2" class="input">
+        <option value="">2ª Folga (padrão)</option>
+        <option>Terça</option><option>Quarta</option>
+        <option>Quinta</option><option>Sexta</option><option>Sábado</option><option>Domingo</option>
+      </select>
+      <input type="text" id="editObs" placeholder="Observações" class="input" style="grid-column:1/-1;" />
+    </div>
+    <div class="modal-actions">
+      <button id="btnCancelarEdicao" class="btn btn--ghost">Cancelar</button>
+      <button id="btnSalvarEdicao" class="btn btn--primary">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalhe do Dia -->
+<div id="modal-dia" class="modal" style="display:none;">
+  <div class="modal-box modal-box--wide">
+    <h2 class="modal-title" id="modal-dia-titulo">Dia</h2>
+    <div id="modal-dia-conteudo"></div>
+    <div class="modal-actions">
+      <button id="btnFecharDia" class="btn btn--ghost">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Alerta Cobertura -->
+<div id="modal-alerta" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h2 class="modal-title" style="color:var(--warning);">⚠️ Atenção — Cobertura mínima</h2>
+    <p id="modal-alerta-msg" style="margin-bottom:20px; line-height:1.6;"></p>
+    <div class="modal-actions">
+      <button id="btnAlertaCancelar" class="btn btn--ghost">Cancelar</button>
+      <button id="btnAlertaConfirmar" class="btn btn--danger">Confirmar mesmo assim</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Datas Admin (Escala Mensal) -->
+<div id="modal-datas-admin" class="modal" style="display:none;">
+  <div class="modal-box">
+    <h2 class="modal-title">Definir 2ª Folga Mensal</h2>
+    <p class="card-desc">Selecione as datas exatas para <strong id="adminDataFuncNome"></strong> no mês de <strong id="adminDataMesLabel"></strong>.</p>
+    
+    <input type="hidden" id="adminDataMesKey" />
+    <input type="hidden" id="adminDataFuncKey" />
+
+    <div style="background:var(--brand-50); padding:12px; border-radius:var(--radius-sm); border:1px solid var(--brand-100); margin-top:10px;">
+      <label class="form-label">Adicionar Data</label>
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <input type="date" id="adminInputData" class="input" />
+        <button id="btnAdminAddData" class="btn btn--ghost" style="white-space:nowrap;">+ Adicionar</button>
+      </div>
+      <div id="admin-lista-datas" style="display:flex; flex-wrap:wrap; gap:6px; min-height:30px;"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="btnAdminCancelarData" class="btn btn--ghost">Cancelar</button>
+      <button id="btnAdminSalvarData" class="btn btn--primary">Salvar Datas</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay" class="modal-overlay" style="display:none;"></div>
+<div id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
